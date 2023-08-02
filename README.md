@@ -1,6 +1,6 @@
 # PosePile
 
-This is a large collection of dataset processing (and benchmark evaluaiton) scripts for image-based 3D human pose estimation, as used in the paper 
+This is a large collection of dataset processing (and benchmark evaluation) scripts for image-based 3D human pose estimation, as used in the paper 
 
 **Learning 3D Human Pose Estimation from Dozens of Datasets using a Geometry-Aware Autoencoder to Bridge Between Skeleton Formats** \
 István Sárándi, Alexander Hermans, Bastian Leibe \
