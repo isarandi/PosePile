@@ -24,7 +24,7 @@
 # year = {2020} }
 # https://ci3d.imar.ro/chi3d
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/imar_datasets"

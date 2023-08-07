@@ -7,7 +7,7 @@
 #}
 # https://sailvos.web.illinois.edu/_site/index.html
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/sailvos"

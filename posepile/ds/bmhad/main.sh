@@ -3,7 +3,7 @@
 # Berkeley MHAD: A Comprehensive Multimodal Human Action Database. In Proceedings of the IEEE Workshop on Applications on Computer Vision (WACV), 2013.
 # https://tele-immersion.citris-uc.org/berkeley_mhad
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/bmhad"

@@ -7,7 +7,7 @@
 # https://cvssp.org/data/totalcapture/
 # https://github.com/zhezh/TotalCapture-Toolbox
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/totalcapture"

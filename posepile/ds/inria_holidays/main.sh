@@ -4,7 +4,7 @@
 # Proceedings of the 10th European conference on Computer vision, October, 2008
 # https://lear.inrialpes.fr/~jegou/data.php
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/inria_holidays"

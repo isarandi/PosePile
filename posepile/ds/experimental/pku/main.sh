@@ -9,7 +9,7 @@
 # https://github.com/ECHO960/PKU-MMD
 # https://arxiv.org/abs/1703.07475
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/pku"

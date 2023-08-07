@@ -8,7 +8,7 @@
 # https://www.di.ens.fr/willow/research/surreal/data/
 # https://github.com/gulvarol/surreal
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/surreal"

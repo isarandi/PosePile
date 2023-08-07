@@ -15,7 +15,7 @@
 #}
 # http://www.tnt.uni-hannover.de/project/MPI08_Database/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/mpi08"

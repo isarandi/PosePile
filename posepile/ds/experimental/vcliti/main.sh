@@ -13,7 +13,7 @@
 # https://vcl.iti.gr/dataset/dataset-of-multiple-kinect2-rgb-d-streams/
 # https://vcl.iti.gr/dataset/datasets-of-multiple-kinect2-rgb-d-streams-and-skeleton-tracking/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/vcliti"

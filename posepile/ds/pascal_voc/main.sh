@@ -5,7 +5,7 @@
 #	howpublished = "http://www.pascal-network.org/challenges/VOC/voc2012/workshop/index.html"}
 # http://host.robots.ox.ac.uk/pascal/VOC/voc2012/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/pascal_voc"

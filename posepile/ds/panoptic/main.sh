@@ -5,7 +5,7 @@
 # http://domedb.perception.cs.cmu.edu/
 # https://github.com/CMU-Perceptual-Computing-Lab/panoptic-toolbox
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/panoptic"

@@ -10,7 +10,7 @@
 #}
 # https://tofis.github.io/human4d_dataset/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/human4d"

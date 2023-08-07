@@ -8,7 +8,7 @@
 #}
 # https://ikeaasm.github.io/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 # Download data here

@@ -10,7 +10,7 @@
 #}
 # http://gvv.mpi-inf.mpg.de/3dhp-dataset/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 cd "$DATA_ROOT"

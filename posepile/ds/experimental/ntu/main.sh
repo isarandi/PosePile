@@ -17,7 +17,7 @@
 #}
 # https://github.com/shahroudy/NTURGB-D
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/ntu"

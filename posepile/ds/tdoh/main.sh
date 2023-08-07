@@ -7,7 +7,7 @@
 #}
 # https://www.yangangwang.com/papers/ZHANG-OOH-2020-03.html
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/3doh"

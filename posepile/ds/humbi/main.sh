@@ -9,7 +9,7 @@
 # https://github.com/zhixuany/HUMBI
 # https://arxiv.org/abs/1812.00281
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/humbi"

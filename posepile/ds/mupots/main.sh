@@ -7,7 +7,7 @@
 #}
 # http://gvv.mpi-inf.mpg.de/projects/SingleShotMultiPerson
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/mupots"

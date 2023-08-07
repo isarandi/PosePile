@@ -8,7 +8,7 @@
 # https://spec.is.tue.mpg.de/
 # https://github.com/mkocabas/SPEC
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/spec"

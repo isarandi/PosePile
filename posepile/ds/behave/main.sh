@@ -7,7 +7,7 @@
 #  }
 # https://virtualhumans.mpi-inf.mpg.de/behave/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/behave"

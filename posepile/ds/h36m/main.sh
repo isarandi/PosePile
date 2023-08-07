@@ -18,7 +18,7 @@
 #}
 # http://vision.imar.ro/human3.6m
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 # Logging in

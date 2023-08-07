@@ -5,7 +5,7 @@
 # https://visal.cs.cityu.edu.hk/research/mads/
 
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 # Get data from https://drive.google.com/drive/folders/0B0AquUC4V8cFU2otR3l3WWRUVVk?resourcekey=0-KC-rxBAHiIIpylFRCTESNQ&usp=sharing

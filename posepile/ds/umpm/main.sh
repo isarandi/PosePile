@@ -10,7 +10,7 @@
 #}
 # https://www2.projects.science.uu.nl/umpm/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/umpm"

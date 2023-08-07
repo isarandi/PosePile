@@ -4,7 +4,7 @@
 # In International Journal of Computer Vision, Vol. 87 (1-2), 2010.
 # http://humaneva.is.tue.mpg.de/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/humaneva"

@@ -9,7 +9,7 @@
 #  url = {https://doi.org/10.5683/SP2/JRHDRN}
 #  }
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/bml_movi"

@@ -11,7 +11,7 @@
 # https://storage.cloud.google.com/hspace_public
 
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/hspace"

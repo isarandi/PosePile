@@ -4,7 +4,7 @@
 # https://www.cs.utexas.edu/~liyanc/projects/gpa-dataset/
 # https://arxiv.org/abs/1905.07718
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 # Get data from https://drive.google.com/drive/u/2/folders/14SWrgO3d_Ss2Vw3Q_vWb0b6JEZ5g8UgW

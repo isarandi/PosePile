@@ -9,7 +9,7 @@
 # https://www.albertpumarola.com/research/3DPeople/index.html
 # https://github.com/albertpumarola/3DPeople-Dataset
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/3dpeople"

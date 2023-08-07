@@ -8,7 +8,7 @@
 #}
 # https://posetrack.net/
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 mkdircd "$DATA_ROOT/posetrack"

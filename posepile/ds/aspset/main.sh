@@ -13,7 +13,7 @@
 # https://github.com/anibali/aspset-510
 # https://archive.org/details/aspset510
 set -euo pipefail
-source functions.sh
+source posepile/functions.sh
 check_data_root
 
 git clone https://github.com/anibali/aspset-510.git "$DATA_ROOT/aspset"
