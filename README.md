@@ -6,6 +6,19 @@ This is a large collection of dataset processing (and benchmark evaluation) scri
 István Sárándi, Alexander Hermans, Bastian Leibe \
 Winter Conference on Applications of Computer Vision (WACV), 2023
 
+![Screenshot](screenshot.png)
+*(screenshot of [this GUI tool](https://github.com/isarandi/pose-dataset-viewer) displaying the full combined dataset)*
+
+## Motivation
+
+Recently, there has been an explosion of new 3D human pose estimation datasets available to the vision community, but each research paper typically only uses one or a few of them for training. We suspect that one major reason is that using each dataset requires figuring out its quirks, how it is stored and how it needs to be processed in Python (and another reason is the incompatible skeleton joint definitions, which we also address in [our paper](https://arxiv.org/abs/2212.14474)).
+
+This repository is therefore intended to help by clearly defining out all processing steps, all the way from raw downloaded dataset files to final annotated examples, dealing with the unique quirks and tricks involved with each dataset.
+
+As shown in the paper, it turns out that there is a large cumulative benefit in using 28 datasets (spanning over a decade of community effort) for training a single model.
+
+## Structure
+
 The repo is structured as follows. Each dataset has its own directory under `posepile/ds/$dataset_name`. Within that, there is a `main.sh` bash script listing the processing steps, and a `main.py` which is called from bash and contains a `make_dataset()` function. There are often additional scripts in the directory, depending on the dataset and the processing steps needed, and they are also called from `main.sh`. Corresponding benchmark evaluation scripts are named `eval.py` in the same directory (for the most common ones).
 
 Typically, the preprocessing consists of downloading and extracting the dataset, some conversion or compression steps, camera calibration processing, person detection, person segmentation, adaptive selection of frames with enough motion, generation of smaller-resolution image crops and putting it all into a common format (`posepile.datases3D.Pose3DDataset` and `posepile.datases3D.Pose2DDataset`).
