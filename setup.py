@@ -27,6 +27,5 @@ setup(
         'boxlib @ git+https://github.com/isarandi/boxlib.git',
         'rlemasklib @ git+https://github.com/isarandi/rlemasklib.git',
         'simplepyutils @ git+https://github.com/isarandi/simplepyutils.git',
-        'throttledpool @ git+https://github.com/isarandi/throttledpool.git',
     ]
 )
