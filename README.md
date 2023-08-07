@@ -15,7 +15,7 @@ Recently, there has been an explosion of new 3D human pose estimation datasets a
 
 This repository is therefore intended to help by clearly defining out all processing steps, all the way from raw downloaded dataset files to final annotated examples, dealing with the unique quirks and tricks involved with each dataset.
 
-As shown in the paper, it turns out that there is a large cumulative benefit in using 28 datasets (spanning over a decade of community effort) for training a single model.
+As shown in the paper, it turns out that there is a large cumulative benefit in using 28 datasets (spanning over a decade of community effort) for training a single model. Paper references and URLs for each dataset can be found in the respective main script as a comment.
 
 ## Structure
 
