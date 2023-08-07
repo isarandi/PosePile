@@ -3,6 +3,7 @@
 This is a large collection of dataset processing (and benchmark evaluation) scripts for image-based 3D human pose estimation, as used in the paper 
 
 **Learning 3D Human Pose Estimation from Dozens of Datasets using a Geometry-Aware Autoencoder to Bridge Between Skeleton Formats** \
+[[project site](https://istvansarandi.com/dozens)] [[arxiv](https://arxiv.org/abs/2212.14474)] \
 István Sárándi, Alexander Hermans, Bastian Leibe \
 Winter Conference on Applications of Computer Vision (WACV), 2023
 
