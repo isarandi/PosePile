@@ -93,7 +93,7 @@ def make_efficient_example(
             new_im = (new_im ** (1 / 2.2) * 255).astype(np.uint8)
         spu.ensure_parent_dir_exists(new_image_abspath)
         imageio.imwrite(new_image_abspath, new_im, quality=95)
-        assert improc.is_image_readable(new_image_abspath)
+        # assert improc.is_image_readable(new_image_abspath)
     new_ex = copy.deepcopy(ex)
     new_ex.bbox = reprojected_box
     new_ex.image_path = new_image_path

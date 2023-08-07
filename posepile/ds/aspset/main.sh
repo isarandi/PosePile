@@ -17,10 +17,12 @@ source posepile/functions.sh
 check_data_root
 
 git clone https://github.com/anibali/aspset-510.git "$DATA_ROOT/aspset"
-cd "$DATA_ROOT/aspset/src" || exit 1
 
-conda install ezc3d
-pip install git+https://github.com/anibali/posekit.git@c9d61d5fa84b3e87dd1a7f0e99ae58aa1e4c759d#egg=posekit
+cd "$DATA_ROOT/aspset/src" || exit 1
+sed -i 's/from importlib_resources import read_text/from importlib.resources import read_text/g' aspset510/download.py
+
+conda install ezc3d -c conda-forge
+pip install tqdm git+https://github.com/anibali/posekit.git@c9d61d5fa84b3e87dd1a7f0e99ae58aa1e4c759d#egg=posekit
 python -m aspset510.bin.download_data --data-dir=../data
 
 python -m posepile.ds.aspset.main --stage=1

@@ -22,10 +22,17 @@ setup(
         'attrdict',
         'transforms3d',
         'numpy',
+        'scipy',
         'more-itertools',
+        'msgpack-numpy',
+        'numba',
+        'jpeg4py',
+        'imageio[ffmpeg]'
         'cameralib @ git+https://github.com/isarandi/cameralib.git',
         'boxlib @ git+https://github.com/isarandi/boxlib.git',
         'rlemasklib @ git+https://github.com/isarandi/rlemasklib.git',
         'simplepyutils @ git+https://github.com/isarandi/simplepyutils.git',
+        'humcentr-cli @ git+https://github.com/isarandi/humcentr-cli.git',
+        'barecat @ git+https://github.com/isarandi/BareCat.git',
     ]
 )

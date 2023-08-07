@@ -33,7 +33,7 @@ else:
 def imread(path, dst=None):
     if isinstance(path, bytes):
         path = path.decode('utf8')
-    elif isinstance(path, np.str):
+    elif isinstance(path, np.str_):
         path = str(path)
 
     path = util.ensure_absolute_path(path)
