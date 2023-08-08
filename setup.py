@@ -27,7 +27,7 @@ setup(
         'msgpack-numpy',
         'numba',
         'jpeg4py',
-        'imageio[ffmpeg]'
+        'imageio[ffmpeg]',
         'cameralib @ git+https://github.com/isarandi/cameralib.git',
         'boxlib @ git+https://github.com/isarandi/boxlib.git',
         'rlemasklib @ git+https://github.com/isarandi/rlemasklib.git',
