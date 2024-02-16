@@ -12,7 +12,7 @@ setup(
     version='0.1.0',
     author='István Sárándi',
     author_email='sarandi@vision.rwth-aachen.de',
-    packages=['posepile'],
+    packages=['posepile','posepile.util'],
     scripts=[],
     license='LICENSE',
     description='',
@@ -34,5 +34,6 @@ setup(
         'simplepyutils @ git+https://github.com/isarandi/simplepyutils.git',
         'humcentr-cli @ git+https://github.com/isarandi/humcentr-cli.git',
         'barecat @ git+https://github.com/isarandi/BareCat.git',
+        'posepile.util @ git+https://github.com/isarandi/PosePile.git'
     ]
 )
