@@ -13,16 +13,14 @@ check_data_root
 mkdircd "$DATA_ROOT/mupots"
 
 wget http://gvv.mpi-inf.mpg.de/projects/SingleShotMultiPerson/content/mupots-3d-eval.zip
-unzip mupots-3d-eval.zip
+extractrm mupots-3d-eval.zip
 mv mupots-3d-eval/* ./
 rmdir mupots-3d-eval
-rm mupots-3d-eval.zip
 
 wget http://gvv.mpi-inf.mpg.de/projects/SingleShotMultiPerson/MultiPersonTestSet.zip
-unzip MultiPersonTestSet.zip
+extractrm MultiPersonTestSet.zip
 mv MultiPersonTestSet/* ./
 rmdir MultiPersonTestSet
-rm MultiPersonTestSet.zip
 
 python -m posepile.ds.mupots.calibrate_intrinsics
 

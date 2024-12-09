@@ -128,8 +128,7 @@ def correct_world_coords(coords, path):
 def get_examples(i_subject, activity_name, i_camera, frame_step=5, correct_S9=True):
     camera_names = ['54138969', '55011271', '58860488', '60457274']
     camera_name = camera_names[i_camera]
-    h36m_root = f'{DATA_ROOT}/h36m/'
-    camera = get_cameras(f'{h36m_root}/Release-v1.2/metadata.xml')[i_camera][i_subject - 1]
+    camera = get_cameras()[i_camera][i_subject - 1]
 
     i_relevant_joints = [1, 2, 3, 6, 7, 8, 12, 13, 14, 15, 17, 18, 19, 25, 26, 27, 0]
     n_total_frames, world_coords = load_coords(
@@ -139,7 +138,7 @@ def get_examples(i_subject, activity_name, i_camera, frame_step=5, correct_S9=Tr
     image_relpaths = [f'{image_relfolder}/frame_{i_frame:06d}.jpg'
                       for i_frame in range(0, n_total_frames, frame_step)]
 
-    bbox_path = f'{h36m_root}/S{i_subject}/BBoxes/{activity_name}.{camera_name}.npy'
+    bbox_path = f'{DATA_ROOT}/h36m/S{i_subject}/BBoxes/{activity_name}.{camera_name}.npy'
     bboxes = np.load(bbox_path)[::frame_step]
     if correct_S9:
         bboxes = correct_boxes(bboxes, bbox_path, world_coords, camera)
@@ -149,8 +148,7 @@ def get_examples(i_subject, activity_name, i_camera, frame_step=5, correct_S9=Tr
 
 @functools.lru_cache(20)
 def load_coords(i_subject, activity_name, i_relevant_joints=None, frame_step=5, correct_S9=False):
-    h36m_root = f'{DATA_ROOT}/h36m/'
-    pose_folder = f'{h36m_root}/S{i_subject}/MyPoseFeatures'
+    pose_folder = f'{DATA_ROOT}/h36m/S{i_subject}/MyPoseFeatures'
     coord_path = f'{pose_folder}/D3_Positions/{activity_name}.cdf'
 
     with spacepy.pycdf.CDF(coord_path) as cdf_file:
@@ -168,7 +166,8 @@ def load_coords(i_subject, activity_name, i_relevant_joints=None, frame_step=5, 
 
 
 @functools.lru_cache()
-def get_cameras(metadata_path):
+def get_cameras():
+    metadata_path = f'{DATA_ROOT}/h36m/Release-v1.2/metadata.xml'
     root = xml.etree.ElementTree.parse(metadata_path).getroot()
     cam_params_text = root.findall('w0')[0].text
     numbers = np.array([float(x) for x in cam_params_text[1:-1].split(' ')])
@@ -182,8 +181,7 @@ def get_cameras(metadata_path):
 
 
 def make_h36m_camera(extrinsic_params, intrinsic_params):
-    x_angle, y_angle, z_angle = extrinsic_params[:3]
-    R = transforms3d.euler.euler2mat(x_angle, y_angle, z_angle, 'rxyz')
+    R = transforms3d.euler.euler2mat(*extrinsic_params[:3], 'rxyz')
     t = extrinsic_params[3:6]
     f, c, k, p = np.split(intrinsic_params, (2, 4, 7))
     distortion_coeffs = np.array([k[0], k[1], p[0], p[1], k[2]], np.float32)
@@ -235,11 +233,13 @@ def get_all_gt_poses(i_subjects, i_relevant_joints, frame_step):
     all_image_relpaths = []
     for i_subj in i_subjects:
         for activity, cam_id in itertools.product(get_activity_names(i_subj), range(4)):
-            # Corrupt data in original release:
+            # Corrupt data in original release?
+            # Maybe not with every video codec? Seems to work now.
             # if i_subj == 11 and activity == 'Directions' and cam_id == 0:
             #    continue
             n_frames_total, world_coords = load_coords(
-                i_subject=i_subj, activity_name=activity, i_relevant_joints=i_relevant_joints,
+                i_subject=i_subj, activity_name=activity,
+                i_relevant_joints=tuple(i_relevant_joints),
                 frame_step=frame_step)
             all_world_coords.append(world_coords)
             camera_name = camera_names[cam_id]

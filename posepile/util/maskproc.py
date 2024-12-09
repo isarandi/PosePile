@@ -27,10 +27,10 @@ def largest_connected_component(mask):
 
 
 def mask_iou(mask1, mask2):
-    union = cv2.countNonZero(mask1 | mask2)
-    if union == 0:
-        return 0
     intersection = cv2.countNonZero(mask1 & mask2)
+    if intersection == 0:
+        return 0
+    union = cv2.countNonZero(mask1 | mask2)
     return intersection / union
 
 
@@ -64,11 +64,12 @@ def resize_mask(mask_encoded, new_imshape):
 def draw_mask(img, mask, mask_color):
     inline = get_inline(mask != 0, 1, 5)
     imcolor = img[mask != 0].astype(np.float64)
+    mask_color = np.asarray(mask_color, np.float64)
     img[mask != 0] = np.clip(mask_color * 0.3 + imcolor * 0.7, 0, 255).astype(np.uint8)
     img[inline] = mask_color
 
 
 def get_inline(mask, d1=1, d2=3):
-    if mask.dtype == np.bool:
-        return get_inline(mask.astype(np.uint8), d1, d2).astype(np.bool)
+    if mask.dtype == bool:
+        return get_inline(mask.astype(np.uint8), d1, d2).astype(bool)
     return erode(mask, d1) - erode(mask, d2)

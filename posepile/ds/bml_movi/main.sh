@@ -16,15 +16,7 @@ mkdircd "$DATA_ROOT/bml_movi"
 
 # Download all 1057 files from https://doi.org/10.5683/SP2/JRHDRN into "$DATA_ROOT/bml_movi"
 
-for name in *.tar; do
-  tar xf "$name"
-  rm "$name"
-done
-
-for name in *.zip; do
-  unzip "$name"
-  rm "$name"
-done
+extractrm *.tar *.zip
 
 git clone https://github.com/saeed1262/MoVi-Toolbox.git
 

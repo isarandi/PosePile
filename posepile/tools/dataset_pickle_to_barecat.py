@@ -2,16 +2,14 @@ import os.path as osp
 import sys
 
 import barecat
-import cameralib
 import cv2
-import msgpack_numpy
 import numpy as np
+import posepile.datasets3d as ds3d
 import rlemasklib
 import simplepyutils as spu
-
-import posepile.datasets3d as ds3d
 from posepile.joint_info import JointInfo
 from posepile.util import geom3d
+from posepile.util.misc import cast_if_precise_enough
 
 
 def convert(pickle_in_path, barecat_out_path, legacy_module_name):
@@ -25,6 +23,7 @@ def convert(pickle_in_path, barecat_out_path, legacy_module_name):
     ds = spu.load_pickle(pickle_in_path)
     fix_legacy_issues(ds)
     dataset_to_barecat(ds, barecat_out_path)
+
 
 def update_pickle_file(pickle_in_path, pickle_out_path, legacy_module_name):
     if legacy_module_name:
@@ -40,9 +39,9 @@ def update_pickle_file(pickle_in_path, pickle_out_path, legacy_module_name):
     fix_legacy_issues(ds)
     spu.dump_pickle(ds, pickle_out_path)
 
+
 def dataset_to_barecat(ds, out_path):
-    encoder = msgpack_numpy.Packer().pack()
-    with barecat.Writer(out_path, overwrite=True, encoder=encoder) as bc_writer:
+    with barecat.Barecat(out_path, overwrite=True, readonly=False, auto_codec=True) as bc_writer:
         bc_writer['metadata.msgpack'] = dict(
             joint_names=ds.joint_info.names,
             joint_edges=ds.joint_info.stick_figure_edges,
@@ -75,17 +74,14 @@ def example_to_dict(ex):
         coords = ex.world_coords.astype(np.float32)
         i_valid_joints = np.where(geom3d.are_joints_valid(coords))[0].astype(np.uint16)
         valid_coords = np.ascontiguousarray(coords[i_valid_joints])
-        valid_coords_fp16 = valid_coords.astype(np.float16)
-        diff = np.nanmax(np.abs(valid_coords - valid_coords_fp16))
-        if diff < 1:
-            valid_coords = valid_coords_fp16
+        valid_coords = cast_if_precise_enough(valid_coords, np.float16, threshold=1)
 
     if i_valid_joints.shape[0] == ex.world_coords.shape[0]:
         i_valid_joints = i_valid_joints[:0]
 
     result = dict(
         impath=ex.image_path,
-        bbox=np.round(ex.bbox).astype(np.uint16),
+        bbox=np.round(ex.bbox).astype(np.int16),
         joints3d=dict(
             rows=valid_coords,
             i_rows=np.asarray(i_valid_joints, np.uint16)
@@ -105,8 +101,6 @@ def example_to_dict(ex):
     if ex.mask is not None:
         result['mask'] = rlemasklib.compress(ex.mask, zlevel=-1)
     return result
-
-
 
 
 def fix_legacy_issues(ds):

@@ -15,16 +15,13 @@ check_data_root
 
 mkdircd "$DATA_ROOT/umpm"
 
-printf 'Username received from the UMPM website: '
-read -r user
-printf 'Password: '
-read -rs password
+read -rp 'Username: ' user
+read -rsp 'Password: ' password
 
 wget https://www2.projects.science.uu.nl/umpm/data/urls.txt
 cat urls.txt | sed $'s/\r$//' | xargs -I{} -P 16 wget --http-user="$user" --http-passwd="$password" {}
 
-for name in *.zip; do unzip "$name" & done
-for name in *.zip; do rm "$name"; done
+for name in *.zip; do extractrm "$name" & done
 
 cd Video
 # This step takes long, we extract about 1 TB of video data here

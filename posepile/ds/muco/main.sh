@@ -13,16 +13,14 @@ check_data_root
 # Download and extract the scripts
 mkdircd "$DATA_ROOT/muco"
 wget http://gvv.mpi-inf.mpg.de/projects/SingleShotMultiPerson/content/muco-3dhp.zip
-unzip muco-3dhp.zip
+extractrm muco-3dhp.zip
 mv muco-3dhp/* ./
 rmdir muco-3dhp
-rm muco-3dhp.zip
 
 wget http://gvv.mpi-inf.mpg.de/3dhp-dataset/mpi_inf_3dhp.zip
-unzip mpi_inf_3dhp.zip
+extractrm mpi_inf_3dhp.zip
 mv mpi_inf_3dhp/util ./
 rm -rf mpi_inf_3dhp
-rm mpi_inf_3dhp.zip
 
 # Verify that the Matlab script files have not been changed
 if ! check_md5 mpii_process_multiperson_train_set.m eb99b09d5d97ed04726a7758ac271761; then

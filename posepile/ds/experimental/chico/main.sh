@@ -20,8 +20,7 @@ mkdircd "$DATA_ROOT/chico"
 # Then:
 
 for name in *.zip; do
-  unzip "$name"
-  rm "$name"
+  extractrm "$name"
 done
 
 # Delete some redundant files

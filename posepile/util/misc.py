@@ -22,3 +22,7 @@ def ensure_absolute_path(path, root=DATA_ROOT):
     else:
         return osp.join(root, path)
 
+def cast_if_precise_enough(value, dtype, threshold=1):
+    value_cast = np.asarray(value, dtype=dtype)
+    diff = np.nanmax(np.abs(value - value_cast))
+    return value_cast if diff < threshold else value

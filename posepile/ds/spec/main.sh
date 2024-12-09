@@ -14,9 +14,8 @@ check_data_root
 mkdircd "$DATA_ROOT/spec"
 # From https://spec.is.tue.mpg.de/download.php download spec-syn.zip and spec-mtp.zip
 
-unzip spec-syn.zip
-unzip spec-mtp.zip
-rm spec-{syn,mtp}.zip
+extractrm spec-syn.zip
+extractrm spec-mtp.zip
 
 python -m humcentr_cli.detect_people --image-root="$DATA_ROOT/spec/spec-syn" --file-pattern='**/*.png' \
   --out-path="$DATA_ROOT/spec/yolov4_detections.pkl" --image-type=png

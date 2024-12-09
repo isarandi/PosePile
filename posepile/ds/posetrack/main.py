@@ -13,7 +13,7 @@ from posepile.util.preproc_for_efficiency import make_efficient_example
 
 
 @spu.picklecache('posetrack.pkl', min_time="2019-11-28T01:12:12")
-def make_posetrack():
+def make_dataset():
     root = f'{DATA_ROOT}/posetrack'
     all_detections = spu.load_pickle(f'{root}/yolov4_detections.pkl')
     anno_paths = glob.glob(f'{root}/posetrack_data/annotations/*/*.json')
@@ -97,4 +97,4 @@ def get_coords(anno):
 
 
 if __name__ == '__main__':
-    make_posetrack()
+    make_dataset()

@@ -2,8 +2,7 @@ import itertools
 
 import more_itertools
 import numpy as np
-from attrdict import AttrDict
-
+from addict import Addict
 
 class JointInfo:
     def __init__(self, joints, edges=()):
@@ -14,7 +13,7 @@ class JointInfo:
         elif isinstance(joints, str):
             self.ids = JointInfo.make_id_map(joints.split(','))
         else:
-            raise Exception
+            raise Exception()
 
         self.names = list(sorted(self.ids.keys(), key=self.ids.get))
         # the index of the joint on the opposite side (e.g. maps index of left wrist to index
@@ -50,14 +49,14 @@ class JointInfo:
             new_names = new_names.split(',')
 
         self.names = new_names
-        new_ids = AttrDict()
+        new_ids = Addict()
         for i, new_name in enumerate(new_names):
             new_ids[new_name] = i
         self.ids = new_ids
 
     @staticmethod
     def make_id_map(names):
-        return AttrDict(dict(zip(names, itertools.count())))
+        return Addict(dict(zip(names, itertools.count())))
 
     @staticmethod
     def other_side_joint_name(name):
@@ -69,6 +68,7 @@ class JointInfo:
             return name
 
     def select_joints(self, selected_joint_ids):
+        selected_joint_ids = list(selected_joint_ids)
         new_names = [self.names[i] for i in selected_joint_ids]
         new_edges = [(selected_joint_ids.index(i), selected_joint_ids.index(j))
                      for i, j in self.stick_figure_edges

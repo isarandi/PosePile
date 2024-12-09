@@ -98,13 +98,13 @@ def pred_to_masked_avg_poses_assoc(
 
 
 def associate_poses_to_masks(poses2d_pred, frame_shape, masks, joint_info3d):
-    masks = np.array([rlemasklib.decode(m) for m in masks])
-    mask_shape = masks.shape[1:3]
+    mask_shape = masks[0]['size']
     mask_size = np.array([mask_shape[1], mask_shape[0]], np.float32)
     frame_size = np.array([frame_shape[1], frame_shape[0]], np.float32)
     poses2d_pred = poses2d_pred * mask_size / frame_size
-    pose_masks = np.array([pose_to_mask(p, mask_shape, joint_info3d, 8) for p in poses2d_pred])
-    iou_matrix = np.array([[maskproc.mask_iou(m1, m2) for m2 in pose_masks] for m1 in masks])
+    pose_masks = [rlemasklib.encode(pose_to_mask(p, mask_shape, joint_info3d, 8))
+                  for p in poses2d_pred]
+    iou_matrix = np.array([[rlemasklib.iou([m1, m2]) for m2 in pose_masks] for m1 in masks])
     true_indices, pred_indices = scipy.optimize.linear_sum_assignment(-iou_matrix)
     n_true_poses = len(masks)
 

@@ -15,8 +15,7 @@ check_data_root
 
 cd "$DATA_ROOT"
 wget http://gvv.mpi-inf.mpg.de/3dhp-dataset/mpi_inf_3dhp.zip
-unzip mpi_inf_3dhp.zip
-rm mpi_inf_3dhp.zip
+extractrm mpi_inf_3dhp.zip
 mv mpi_inf_3dhp 3dhp
 cd 3dhp
 

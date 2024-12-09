@@ -1,3 +1,4 @@
+import barecat
 import functools
 import glob
 import importlib
@@ -5,18 +6,20 @@ import itertools
 import os.path as osp
 import zlib
 
-import barecat
 import boxlib
+import cameralib
+import cv2
 import more_itertools
-import msgpack_numpy
 import numpy as np
-import simplepyutils as spu
-from simplepyutils import logger
-
 import posepile.joint_info
+import rlemasklib
+import simplepyutils as spu
+from barecat.threadsafe import get_cached_reader
+import barecat
 from posepile import joint_filtering, util
 from posepile.joint_info import JointInfo
 from posepile.util import TEST, TRAIN, VALID, geom3d, improc
+from simplepyutils import logger
 
 
 class Pose3DDataset:
@@ -29,7 +32,7 @@ class Pose3DDataset:
             VALID: valid_examples or [],
             TEST: test_examples or []}
 
-        if compute_bone_lengths:
+        if compute_bone_lengths and len(self.joint_info.stick_figure_edges) > 0:
             self.update_bones()
 
     def update_bones(self):
@@ -51,7 +54,7 @@ class Pose3DExample:
     def __init__(
             self, image_path, world_coords, bbox, camera, *,
             activity_name='unknown', scene_name='unknown', mask=None, univ_coords=None,
-            instance_mask=None, image=None):
+            instance_mask=None, image=None, parameters=None):
         self.image_path = image_path
         self.world_coords = world_coords
         self.univ_coords = univ_coords if univ_coords is not None else None
@@ -63,6 +66,7 @@ class Pose3DExample:
         self.instance_mask = instance_mask
         self.custom = None
         self.image = image
+        self.parameters = parameters
 
     def get_world_coords(self):
         if isinstance(self.world_coords, SparseCoords):
@@ -70,70 +74,88 @@ class Pose3DExample:
         else:
             return self.world_coords
 
+    def get_image(self):
+        if self.image is not None:
+            return self.image
+        return improc.imread(self.image_path)
 
-class Pose3DDatasetBareCat:
+    def load(self):
+        return self
+
+
+class Pose3DDatasetBarecat:
     def __init__(self, annotations_path, images_path):
-        self.bc_annotations = get_bc_annotations(annotations_path)
-        self.bc_images = get_bc_images(images_path)
+        self.bc_annotations = get_cached_reader(annotations_path, auto_codec=True)
+        self.bc_images = get_cached_reader(images_path, auto_codec=True)
         metadata = self.bc_annotations['metadata.msgpack']
         self.joint_info = JointInfo(metadata['joint_names'], metadata['joint_edges'])
-        # for i, j in self.joint_info.stick_figure_edges:
-        #    print(f'{self.joint_info.names[i]}-{self.joint_info.names[j]}')
-        exs = spu.groupby(spu.progressbar(self.bc_annotations), lambda p: p.split('/')[0])
+
+        # The first component of the paths is the split (train/val/test)
+        exs = spu.groupby(self.bc_annotations, lambda p: p.partition('/')[0])
         self.examples = {
-            label: [Pose3DExampleBareCat(
+            label: [Pose3DExampleBarecat(
                 self.joint_info, annotations_path, images_path, p)
-                for p in spu.progressbar(exs[name])]
+                for p in exs[name]]
             for label, name in zip([TRAIN, VALID, TEST], ['train', 'val', 'test'])
         }
-        self.train_bones = metadata['train_bone_lengths']
-        self.trainval_bones = metadata['trainval_bone_lengths']
+        self.train_bones = metadata.get('train_bone_lengths')
+        self.trainval_bones = metadata.get('trainval_bone_lengths')
 
 
-@functools.lru_cache()
-def get_bc_annotations(path):
-    return barecat.Reader(path, decoder=msgpack_numpy.unpackb)
-
-@functools.lru_cache()
-def get_bc_images(path):
-    return barecat.Reader(path, decoder=improc.decode_jpeg)
-
-
-class Pose3DExampleBareCat:
+class Pose3DExampleBarecat:
     def __init__(self, joint_info, bc_annotation_path, bc_image_path, path_in_file):
         self.bc_annotation_path = bc_annotation_path
         self.bc_image_path = bc_image_path
         self.path = path_in_file
-        self.image_path = self.path.partition('/')[2]
         self.n_joints = joint_info.n_joints
+        self.image_path = '_'.join(self.path.partition('/')[2].split('_')[:-1])
 
-    def load(self):
-        import cameralib
-        import rlemasklib
-        import cv2
-        d = get_bc_annotations(self.bc_annotation_path)[self.path]
-        cam = cameralib.Camera(
-            rot_world_to_cam=cv2.Rodrigues(d['cam']['rotvec_w2c'])[0],
-            optical_center=np.array(d['cam']['loc']),
-            intrinsic_matrix=np.concatenate([d['cam']['intr'], np.array([[0, 0, 1]])]),
-            distortion_coeffs=d['cam'].get('distcoef', None),
-            world_up=d['cam'].get('up', (0, 0, 1))
-        )
+    def load(self, load_image=True) -> Pose3DExample:
+        if hasattr(self, 'image_path'):
+            del self.image_path
 
+        d = get_cached_reader(self.bc_annotation_path)[self.path]
+        ex = dict_to_example(d, self.n_joints)
+        if load_image:
+            try:
+                ex.image = get_cached_reader(self.bc_image_path)[ex.image_path]
+            except KeyError:
+                ex.image = improc.imread(ex.image_path)
+        return ex
+
+
+def dict_to_example(d, n_joints):
+    cam = cameralib.Camera(
+        rot_world_to_cam=cv2.Rodrigues(d['cam']['rotvec_w2c'])[0],
+        optical_center=np.array(d['cam']['loc']),
+        intrinsic_matrix=np.concatenate([d['cam']['intr'], np.array([[0, 0, 1]])]),
+        distortion_coeffs=d['cam'].get('distcoef', None),
+        world_up=d['cam'].get('up', (0, 0, 1))
+    )
+    if 'joints3d' in d and n_joints > 0:
         world_coords = np.full(
-            shape=[self.n_joints, 3], dtype=np.float32, fill_value=np.nan)
-        world_coords[d['joints3d']['i_rows']] = d['joints3d']['rows']
-        image_path = d['impath']
-        image = get_bc_images(self.bc_image_path)[image_path]
+            shape=[n_joints, 3], dtype=np.float32, fill_value=np.nan)
+        if len(d['joints3d']['i_rows']) > 0:
+            world_coords[d['joints3d']['i_rows']] = d['joints3d']['rows']
+        else:
+            world_coords = d['joints3d']['rows']
+    else:
+        world_coords = None
 
-        return Pose3DExample(
-            image_path=image_path,
-            image=image,
-            bbox=d['bbox'].astype(np.float32),
-            camera=cam,
-            world_coords=world_coords,
-            mask=rlemasklib.decompress(d['mask']) if 'mask' in d else None
-        )
+    if 'parameters' in d:
+        parameters = dict(d['parameters'])
+        parameters['pose'] = parameters['pose'].reshape(-1)
+    else:
+        parameters = None
+
+    return Pose3DExample(
+        image_path=d['impath'],
+        bbox=d['bbox'].astype(np.float32),
+        camera=cam,
+        world_coords=world_coords,
+        mask=rlemasklib.decompress(d['mask'], only_gzip=True) if 'mask' in d else None,
+        parameters=parameters
+    )
 
 
 def compute_mean_bones(examples, joint_info):
@@ -425,7 +447,7 @@ def get_dataset(dataset_name, *args, **kwargs):
 
     # Datasets can be loaded from barecat files
     if dataset_name.endswith('.barecat'):
-        return Pose3DDatasetBareCat(dataset_name, images_path=FLAGS.image_barecat_path)
+        return Pose3DDatasetBarecat(dataset_name, FLAGS.image_barecat_path)
 
     logger.debug(f'Making dataset {dataset_name}...')
 
@@ -447,8 +469,8 @@ def get_dataset(dataset_name, *args, **kwargs):
         try:
             # Others are defined in their own modules
             dataset_module = importlib.import_module(f'posepile.ds.{dataset_name}.main')
-        except ImportError:
-            raise ValueError(f'Dataset {dataset_name} not found.')
+        except ImportError as e:
+            raise ValueError(f'Dataset {dataset_name} not found.') from e
 
         # Each dataset module should has a make_dataset function
         make_fn = dataset_module.make_dataset

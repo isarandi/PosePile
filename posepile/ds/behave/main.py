@@ -9,7 +9,7 @@ import imageio.v2 as imageio
 import numpy as np
 import simplepyutils as spu
 from simplepyutils import logger
-from smpl.smpl import SMPL
+from smpl.numpy import SMPL
 
 import posepile.datasets3d as ds3d
 from posepile.util.adaptive_pose_sampling import AdaptivePoseSampler2
@@ -150,10 +150,9 @@ def get_bbox(im_coords, image_relpath, boxes):
 
 
 def get_smpl_joints(body_model, fit):
-    pose = fit['pose'][np.newaxis]
-    shape = np.repeat(fit['betas'][np.newaxis], pose.shape[0], axis=0)
-    result = body_model(pose, shape, fit['trans'][np.newaxis], return_vertices=False)
-    return result['joints'][0] * 1000
+    return body_model.single(
+        fit['pose'], fit['betas'], fit['trans'],
+        return_vertices=False)['joints'] * 1000
 
 
 if __name__ == '__main__':

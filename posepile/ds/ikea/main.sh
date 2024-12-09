@@ -16,8 +16,7 @@ check_data_root
 mkdircd "$DATA_ROOT/ikea"
 
 for name in *.zip; do
-  unzip "$name"
-  rm "$name"
+  extractrm "$name"
 done
 
 python -m posepile.ds.ikea.main --extract-annotated-frames

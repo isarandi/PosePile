@@ -15,9 +15,11 @@
 set -euo pipefail
 source posepile/functions.sh
 check_data_root
+dataset_name=aspset
+dataset_dir="$DATA_ROOT/$dataset_name"
 
 git clone https://github.com/anibali/aspset-510.git "$DATA_ROOT/aspset"
-cd "$DATA_ROOT/aspset/src" || exit 1
+cd "$dataset_dir/src" || exit 1
 
 conda install ezc3d
 pip install git+https://github.com/anibali/posekit.git@c9d61d5fa84b3e87dd1a7f0e99ae58aa1e4c759d#egg=posekit

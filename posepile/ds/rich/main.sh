@@ -16,10 +16,8 @@ mkdircd "$DATA_ROOT/rich"
 # download the download_{train,val,test}.sh scripts into the rich dir
 # download the scan_calibration.zip, {train,val,test}_body.zip files into the rich dir
 
-printf 'Username: '
-read -r username
-printf 'Password: '
-read -rs password
+read -rp 'Username: ' username
+read -rsp 'Password: ' password
 
 for phase in train val test; do
   sed -i 's/\r$//' download_$phase.sh
@@ -30,10 +28,10 @@ for phase in train val test; do
   done
 done
 
-unzip scan_calibration.zip
-unzip train_body.zip
-unzip val_body.zip
-unzip test_body.zip
+extractrm scan_calibration.zip
+extractrm train_body.zip
+extractrm val_body.zip
+extractrm test_body.zip
 mv ps/project/multi-ioi/rich_release/* ./
 rm -rf ps
 

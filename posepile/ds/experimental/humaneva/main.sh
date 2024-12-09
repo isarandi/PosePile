@@ -11,10 +11,8 @@ mkdircd "$DATA_ROOT/humaneva"
 
 echo 'To download the HumanEva dataset, you first need to register on the official website at http://humaneva.is.tue.mpg.de'
 echo "If that's done, enter your details below (or use the raw commands of the script):"
-printf 'Username registered on the HumanEva website: '
-read -r user
-printf 'Password: '
-read -rs password
+read -rp 'Username: ' username
+read -rsp 'Password: ' password
 
 login_url="http://humaneva.is.tue.mpg.de/login"
 download_page_url="http://humaneva.is.tue.mpg.de/datasets_human_1"

@@ -154,23 +154,18 @@ def get_mask(i_subject, i_seq, i_cam, i_frame):
     person_box = get_box(i_subject, i_seq, i_cam, i_frame)
 
     is_fg = chroma_frame[..., 0] > 100
-    n_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
-        is_fg.astype(np.uint8), 4, cv2.CV_32S)
-    component_boxes = stats[:, :4]
-    ious = [boxlib.iou(component_box, person_box)
-            for component_box in component_boxes]
-    ious[0] = 0
-    person_label = np.argmax(ious)
-    mask = (labels == person_label).astype(np.uint8)
+    rle_components = rlemasklib.connected_components(rlemasklib.encode(is_fg), connectivity=4)
+    if rle_components is None:
+        return rlemasklib.empty(is_fg.shape[:2])
+
+    component_boxes = rlemasklib.to_bbox(rle_components)
+    ious = [boxlib.iou(component_box, person_box) for component_box in component_boxes]
+    rle = rle_components[np.argmax(ious)]
 
     # Remove foreground pixels that are far from the person box
     intbox = boxlib.intersection(
         boxlib.full((2048, 2048)), boxlib.expand(person_box, 1.3)).astype(int)
-    mask[:intbox[1]] = 0
-    mask[:, :intbox[0]] = 0
-    mask[:, intbox[0] + intbox[2]:] = 0
-    mask[intbox[1] + intbox[3]:] = 0
-    return rlemasklib.encode(mask)
+    return rlemasklib.intersection(rle, rlemasklib.from_bbox(intbox, is_fg.shape[:2]))
 
 
 @spu.picklecache('chair_masks_3dhp/mask')
@@ -178,8 +173,10 @@ def get_chair_mask(i_subject, i_seq, i_cam, i_frame):
     p = f'{DATA_ROOT}/3dhp/S{i_subject}/Seq{i_seq}/ChairMasks/img_{i_cam}_{i_frame:06d}.jpg'
     chroma_frame = improc.imread(p)
     is_fg = chroma_frame[..., 0] < 32
-    mask, objbox = maskproc.largest_connected_component(is_fg)
-    return rlemasklib.encode(mask)
+    largest = rlemasklib.largest_connected_component(rlemasklib.encode(is_fg))
+    if largest is None:
+        return rlemasklib.empty(chroma_frame.shape[:2])
+    return largest
 
 
 @cachetools.func.rr_cache(2 ** 28)

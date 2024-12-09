@@ -10,7 +10,7 @@ import simplepyutils as spu
 from posepile.ds.experimental.triangulate_common import infargmin, infmin, mask_and_average, project
 from posepile.paths import DATA_ROOT
 from posepile.util import geom3d
-
+import random
 CWI_ROOT = f'{DATA_ROOT}/cwi'
 
 
@@ -76,7 +76,7 @@ def find_main_person(poses_per_cam, joint_info, n_aug=5, root_name='pelv', dista
 
 def triangulate_poses(
         cameras, cam_poses_per_cam, imshape=(1536, 2048), use_triple_combinations=True,
-        min_inlier_views=3):
+        min_inlier_views=3, max_combos=None, inlier_threshold=0.2, inlier_auc_threshold=0.1):
     proj_poses = [project(p) for c, p in zip(cameras, cam_poses_per_cam)]
     box_sizes = [bounding_box_size(p, imshape=imshape) for p in proj_poses]
     n_joints = len(proj_poses[0])
@@ -99,11 +99,16 @@ def triangulate_poses(
     # Like RANSAC without the randomness (just SAC).
     n_views = len(cameras)
     view_combinations = itertools.combinations(range(n_views), 2)
-    guesses2 = reshaped_nullspace(np.stack([A[:, list(i_views)] for i_views in view_combinations]))
+    combos = list(view_combinations)
+    if max_combos:
+        combos = random.sample(combos, min(len(combos), max_combos))
+    guesses2 = reshaped_nullspace(np.stack([A[:, list(i_views)] for i_views in combos]))
+
     if use_triple_combinations and n_views >= 3:
         view_combinations = itertools.combinations(range(n_views), 3)
         combos = list(view_combinations)
-        # combos = random.sample(combos, min(len(combos),500))
+        if max_combos:
+            combos = random.sample(combos, min(len(combos), max_combos))
         guesses3 = reshaped_nullspace(
             np.stack([A[:, list(i_views)] for i_views in combos]))
         guesses = np.concatenate([guesses2, guesses3], axis=0)
@@ -118,9 +123,9 @@ def triangulate_poses(
                            for proj_guess in proj_guesses])  # n_guess, n_views, n_joints
 
     rel_errors = np.nan_to_num(rel_errors, nan=np.inf)
-    is_inlier = rel_errors < 0.2  # n_guess, n_views, n_joints
+    is_inlier = rel_errors < inlier_threshold  # n_guess, n_views, n_joints
     # n_inliers = np.count_nonzero(is_inlier, axis=1)  # n_guess, n_joints
-    auc_inliers = np.mean(geom3d.auc(rel_errors, 0, 0.1), axis=1)
+    auc_inliers = np.mean(geom3d.auc(rel_errors, 0, inlier_auc_threshold), axis=1)
     # median_err_over_cameras = kth_smallest(rel_errors, 1, axis=1)
     # best_i_guess = infargmin(median_err_over_cameras, axis=0)
     best_i_guess = np.argmax(auc_inliers, axis=0)  # n_joints

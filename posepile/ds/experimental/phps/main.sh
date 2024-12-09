@@ -21,13 +21,7 @@ check_data_root
 
 mkdircd "$DATA_ROOT/phps"
 
-for name in *.tar.gz.0 *.tar.gz; do
-  tar xvf "$name"
-done
-for name in *.zip; do
-  unzip "$name"
-done
-rm -- *.tar.gz* *.zip
+extractrm *.tar.gz.0 *.tar.gz *.zip
 
 python -m posepile.tools.find_broken_jpegs "$DATA_ROOT/phps/color" "$DATA_ROOT/phps/ignore_images.txt"
 cat "$DATA_ROOT/phps/ignore_images.txt" | while read relpath; do

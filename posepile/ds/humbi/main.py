@@ -13,7 +13,7 @@ from posepile.joint_info import JointInfo
 from posepile.paths import DATA_ROOT
 from posepile.util.preproc_for_efficiency import make_efficient_example
 from simplepyutils import FLAGS
-from smpl.smpl import SMPL
+from smpl.numpy import SMPL
 
 
 def main():

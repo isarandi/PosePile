@@ -77,10 +77,9 @@ class AdaptivePoseSampler2:
             if change.size == 0:
                 some_changed = False
             else:
-                with np.errstate(invalid='ignore'):
-                    with warnings.catch_warnings():
-                        warnings.filterwarnings('ignore', 'All-NaN slice encountered')
-                        minmax_change = np.nanmin(np.nanmax(change, axis=1), axis=0)
+                with np.errstate(invalid='ignore'), warnings.catch_warnings():
+                    warnings.filterwarnings('ignore', 'All-NaN slice encountered')
+                    minmax_change = np.nanmin(np.nanmax(change, axis=1), axis=0)
                 some_changed = minmax_change >= self.thresh
         else:
             some_changed = not np.any(np.all(change < self.thresh, axis=1), axis=0)

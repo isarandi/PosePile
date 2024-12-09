@@ -21,8 +21,9 @@
 set -euo pipefail
 source posepile/functions.sh
 check_data_root
-
-mkdircd "$DATA_ROOT/aist"
+dataset_name=aist
+dataset_dir="$DATA_ROOT/$dataset_name"
+mkdircd "$dataset_dir"
 
 # Download the videos
 wget https://aistdancedb.ongaaccel.jp/data/video_refined/10M/refined_10M_all_video_url.csv
@@ -31,7 +32,7 @@ cat refined_10M_all_video_url.csv | xargs -I{} -P 4 wget --directory-prefix=vide
 
 # This requires logging in with a Google account, so simple wget doesn't work"
 echo "Please download https://storage.cloud.google.com/aist_plusplus_public/20210308/fullset.zip using a browser and save it to $DATA_ROOT/aist/fullset.zip"
-unzip fullset.zip
+extractrm fullset.zip
 mv aist_plusplus_final annotations
 
 ############################

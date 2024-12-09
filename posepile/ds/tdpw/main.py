@@ -41,6 +41,7 @@ def make_dataset():
                         continue
 
                     impath = f'{root}/imageFiles/{seq_name}/image_{i_frame:05d}.jpg'
+
                     camera = cameralib.Camera(
                         extrinsic_matrix=extrinsics, intrinsic_matrix=intrinsics,
                         world_up=(0, 1, 0))

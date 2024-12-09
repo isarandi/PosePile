@@ -227,6 +227,8 @@ def make_joint_info():
 
 
 def get_bbox(im_coords, image_relpath, boxes, image_size):
+    # TODO: first discard the points outside the image, then compute box
+    # instead of first computing the box then intersecting it with the image
     bbox = boxlib.expand(boxlib.bb_of_points(im_coords), 1.05)
 
     if image_relpath in boxes and boxes[image_relpath]:

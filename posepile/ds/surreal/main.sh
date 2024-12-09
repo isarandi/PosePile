@@ -16,10 +16,8 @@ mkdircd "$DATA_ROOT/surreal"
 echo 'To download the SURREAL dataset, you first need to register on the official website' \
   'at https://www.di.ens.fr/willow/research/surreal/data/'
 echo "If that's done, enter your details below:"
-printf 'Email registered on the SURREAL website: '
-read -r email
-printf 'Password: '
-read -rs password
+read -rp 'Email: ' email
+read -rsp 'Password: ' password
 encoded_email=$(urlencode "$email")
 
 wget --http-user="$encoded_email" --http-password="$password" \

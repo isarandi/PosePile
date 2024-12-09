@@ -8,7 +8,7 @@ def rigid_align(coords_pred, coords_true, *, joint_validity_mask=None, scale_ali
     """Returns the predicted coordinates after rigid alignment to the ground truth."""
 
     if joint_validity_mask is None:
-        joint_validity_mask = np.ones_like(coords_pred[..., 0], dtype=np.bool)
+        joint_validity_mask = np.ones_like(coords_pred[..., 0], dtype=bool)
 
     valid_coords_pred = coords_pred[joint_validity_mask]
     valid_coords_true = coords_true[joint_validity_mask]
@@ -30,7 +30,7 @@ def rigid_align_many(
         coords_pred, coords_true, *, joint_validity_mask=None, scale_align=False,
         reflection_align=False):
     if joint_validity_mask is None:
-        joint_validity_mask = np.ones_like(coords_pred[..., 0], dtype=np.bool)
+        joint_validity_mask = np.ones_like(coords_pred[..., 0], dtype=bool)
 
     return np.stack([
         rigid_align(p, t, joint_validity_mask=jv, scale_align=scale_align,
@@ -138,3 +138,4 @@ def procrustes(X, Y, scaling=True, reflection='best'):
     tform = {'rotation': T, 'scale': b, 'translation': c}
 
     return d, Z, tform
+

@@ -15,10 +15,8 @@ mkdircd "$DATA_ROOT/totalcapture"
 echo 'To download the TotalCapture dataset, you first need to get permission' \
   'at https://cvssp.org/data/totalcapture/'
 echo "If that's done, enter your details below:"
-printf 'Username: '
-read -r user
-printf 'Password: '
-read -rs password
+read -rp 'Email: ' username
+read -rsp 'Password: ' password
 
 mkdir -p {mattes,video}/s{1..5}
 mkdir -p vicon

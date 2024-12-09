@@ -2,10 +2,6 @@ from setuptools import setup
 import os
 import os.path as osp
 
-try:
-    dependencies_managed_by_conda = os.environ['DEPENDENCIES_MANAGED_BY_CONDA'] == '1'
-except KeyError:
-    dependencies_managed_by_conda = False
 
 setup(
     name='posepile',
@@ -19,13 +15,16 @@ setup(
     python_requires='>=3.6',
     install_requires=[] if dependencies_managed_by_conda else [
         'tensorflow',
-        'attrdict',
+        'addict',
         'transforms3d',
         'numpy',
         'more-itertools',
-        'cameralib @ git+https://github.com/isarandi/cameralib.git',
-        'boxlib @ git+https://github.com/isarandi/boxlib.git',
-        'rlemasklib @ git+https://github.com/isarandi/rlemasklib.git',
-        'simplepyutils @ git+https://github.com/isarandi/simplepyutils.git',
+        'msgpack-numpy',
+        'pycocotools',
+        'multiprocessing-utils',
+#        'cameralib @ git+https://github.com/isarandi/cameralib.git',
+#        'boxlib @ git+https://github.com/isarandi/boxlib.git',
+#        'rlemasklib @ git+https://github.com/isarandi/rlemasklib.git',
+#        'simplepyutils @ git+https://github.com/isarandi/simplepyutils.git',
     ]
 )

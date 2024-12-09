@@ -18,14 +18,8 @@ rm sailvos_*.tar.* sailvos_*.zip
 
 # SAIL-VOS human poses are not released publicly.
 # Contact SAIL-VOS maintainers if you need pose data.
-tar xf sailvos_pose_training.tar
-tar xf sailvos_pose_val.tar
-rm sailvos_pose_{training,val}.tar
-
-for file in sailvos_pose_training/*.zip sailvos_pose_val/*.zip; do
-  unzip "$file"
-  rm "$file"
-done
+extractrm sailvos_pose_training.tar sailvos_pose_val.tar
+extractrm sailvos_pose_training/*.zip sailvos_pose_val/*.zip
 
 # Do some compression on the SAILVOS data as it's very large out of the box
 # Compress the SAILVOS bmp image files as they take up a huge amount of disk space

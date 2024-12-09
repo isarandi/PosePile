@@ -15,6 +15,7 @@ check_data_root
 mkdircd "$DATA_ROOT/humbi"
 
 unzip subj*.zip
+rm subj*.zip
 
 # Create ignore list of broken images (600 are found to be broken)
 # But apparently some are broken in minor ways that not all jpeg readers will complain about!

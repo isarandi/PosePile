@@ -13,7 +13,7 @@ check_data_root
 mkdircd "$DATA_ROOT/mads"
 
 zip -s 0 MADS_multiview.zip --out single.zip
-unzip single.zip
+extractrm single.zip
 
 python -m posepile.ds.mads.main --stage=1
 

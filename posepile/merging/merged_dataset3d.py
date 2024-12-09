@@ -2,7 +2,7 @@ import argparse
 import random
 
 import simplepyutils as spu
-from attrdict import AttrDict
+from addict import Addict
 from simplepyutils import FLAGS
 
 import posepile.datasets3d as ds3d
@@ -68,9 +68,9 @@ def merge_joint_infos_of_datasets(datasets_with_uses_suf):
     return merged_joint_info
 
 
-def merge_joint_infos(joint_infos_with_uses_suf):
-    joint_infos = [ji for ji, uses, suf in joint_infos_with_uses_suf]
-    suffixes = [suf for ds, uses, suf in joint_infos_with_uses_suf]
+def merge_joint_infos(joint_infos_with_suf):
+    joint_infos = [ji for ji, suf in joint_infos_with_suf]
+    suffixes = [suf for ds, suf in joint_infos_with_suf]
     joint_infos_new = []
     ji_done = set()
     for ji, suffix in zip(joint_infos, suffixes):
@@ -97,7 +97,7 @@ def merge_joint_infos(joint_infos_with_uses_suf):
 
 @spu.picklecache('huge8.pkl', min_time="2022-08-07T01:41:28")
 def make_huge8():
-    d = AttrDict()
+    d = Addict()
     d.h36m = ds3d.get_compressed_dataset('h36m_alljoints')
     d.h36m.update_bones()
     d.fit3d = ds3d.get_compressed_dataset('imar', 'fit3d')
@@ -180,7 +180,7 @@ def make_huge8():
 
 
 def make_huge8_joint_info():
-    jis = AttrDict()
+    jis = Addict()
     jis.h36m = ds3d.get_joint_info('h36m_alljoints')
     jis.fit3d = ds3d.get_joint_info('imar', 'fit3d')
     jis.humansc3d = ds3d.get_joint_info('imar', 'humansc3d')
@@ -206,36 +206,36 @@ def make_huge8_joint_info():
     jis.mupots = jis.muco_3dhp
 
     ds = merge_joint_infos([
-        [jis.surreal, [(0, 0), (1, 0)], ''],  #
-        [jis.h36m, [(0, 0), (1, 0)], 'h36m'],
-        [jis.fit3d, [(0, 0)], 'h36m'],
-        [jis.chi3d, [(0, 0)], 'h36m'],
-        [jis.humansc3d, [(0, 0)], 'h36m'],
-        [jis.sailvos, [(0, 0), (1, 0)], 'sailvos'],
-        [jis.panoptic, [(0, 0)], 'coco'],
-        [jis.muco_3dhp, [(0, 0)], '3dhp'],
-        [jis.aist, [(0, 0), (1, 0)], 'coco'],
-        [jis.gpa, [(0, 0)], 'gpa'],
-        [jis.humbi, [(0, 0)], ''],
-        [jis.aspset, [(0, 0), (1, 0)], 'aspset'],
-        [jis.agora, [(0, 0), (1, 0)], ''],  #
-        [jis.tdoh, [(0, 0)], '3doh'],
-        [jis.tdpeople, [(0, 0)], '3dpeople'],
-        [jis.bml_movi, [(0, 0)], 'bmlmovi'],
-        [jis.mads, [(0, 0)], 'mads'],
-        [jis.umpm, [(0, 0)], 'umpm'],
-        [jis.bmhad, [(0, 0)], 'bmhad'],
-        [jis.tdhp_full, [(0, 0)], '3dhp'],
-        [jis.totalcapture, [(0, 0)], 'totcap'],
-        [jis.jta, [(0, 0), (1, 0)], 'jta'],
-        [jis.ikea, [(0, 0)], 'ikea'],
-        [jis.human4d, [(0, 0)], 'human4d'],
-        [jis.behave, [(0, 0)], ''],  #
-        [jis.rich, [(0, 0), (1, 0)], 'smplx'],  #
-        [jis.spec, [(0, 0)], ''],  #
-        [jis.hspace, [(0, 0)], 'ghum'],
-        [jis.tdhp, [(2, 1)], '3dhp'],
-        [jis.mupots, [(1, 1)], '3dhp']])
+        [jis.surreal, ''],  #
+        [jis.h36m,  'h36m'],
+        [jis.fit3d, 'h36m'],
+        [jis.chi3d,  'h36m'],
+        [jis.humansc3d, 'h36m'],
+        [jis.sailvos,  'sailvos'],
+        [jis.panoptic, 'coco'],
+        [jis.muco_3dhp,  '3dhp'],
+        [jis.aist, 'coco'],
+        [jis.gpa,  'gpa'],
+        [jis.humbi,  ''],
+        [jis.aspset, 'aspset'],
+        [jis.agora,  ''],  #
+        [jis.tdoh, '3doh'],
+        [jis.tdpeople,  '3dpeople'],
+        [jis.bml_movi, 'bmlmovi'],
+        [jis.mads, 'mads'],
+        [jis.umpm, 'umpm'],
+        [jis.bmhad, 'bmhad'],
+        [jis.tdhp_full, '3dhp'],
+        [jis.totalcapture,  'totcap'],
+        [jis.jta,  'jta'],
+        [jis.ikea, 'ikea'],
+        [jis.human4d, 'human4d'],
+        [jis.behave,  ''],  #
+        [jis.rich,  'smplx'],  #
+        [jis.spec, ''],  #
+        [jis.hspace,  'ghum'],
+        [jis.tdhp, '3dhp'],
+        [jis.mupots, '3dhp']])
     return ds
 
 
@@ -248,7 +248,7 @@ def make_huge8_dummy():
 
 @spu.picklecache('medium3.pkl', min_time="2022-08-18T15:20:06")
 def make_medium3():
-    d = AttrDict()
+    d = Addict()
     d.h36m = ds3d.get_compressed_dataset('h36m_alljoints')
     d.h36m.update_bones()
     d.muco_3dhp = ds3d.get_compressed_dataset('muco_3dhp_200k')
@@ -315,7 +315,7 @@ def make_medium3():
 
 @spu.picklecache('small5.pkl', min_time="2022-07-25T12:28:40")
 def make_small5():
-    d = AttrDict()
+    d = Addict()
     d.h36m = ds3d.get_compressed_dataset('h36m_alljoints')
     d.h36m.update_bones()
     d.muco_3dhp = ds3d.get_compressed_dataset('muco_3dhp_200k')

@@ -2,12 +2,15 @@ import functools
 import importlib
 import itertools
 
+import cameralib
+import cv2
 import numpy as np
+import rlemasklib
 import simplepyutils as spu
-
-from posepile import joint_filtering
+from posepile import joint_filtering, util
+from barecat.threadsafe import get_cached_reader
 from posepile.joint_info import JointInfo
-from posepile.util import TEST, TRAIN, VALID
+from posepile.util import TEST, TRAIN, VALID, improc
 
 
 class Pose2DDataset:
@@ -22,12 +25,62 @@ class Pose2DDataset:
 
 
 class Pose2DExample:
-    def __init__(self, image_path, coords, bbox=None, mask=None, camera=None):
+    def __init__(self, image_path, coords, bbox=None, mask=None, camera=None, densepose=None,
+                 image=None):
         self.image_path = image_path
         self.coords = coords
         self.bbox = np.asarray(bbox)
         self.mask = mask
         self.camera = camera
+        self.densepose = densepose
+        self.image = image
+
+    def get_image(self):
+        if self.image is not None:
+            return self.image
+        return improc.imread(self.image_path)
+
+    def load(self):
+        return self
+
+
+class Pose2DDatasetBarecat:
+    def __init__(self, annotations_path, images_path):
+        self.bc_annotations = get_cached_reader(annotations_path, auto_codec=True)
+        self.bc_images = get_cached_reader(images_path, auto_codec=True)
+        metadata = self.bc_annotations['metadata.msgpack']
+        self.joint_info = JointInfo(metadata['joint_names'], metadata['joint_edges'])
+
+        # The first component of the paths is the split (train/val/test)
+        exs = spu.groupby(self.bc_annotations, lambda p: p.partition('/')[0])
+        self.examples = {
+            label: [Pose2DExampleBarecat(
+                self.joint_info, annotations_path, images_path, p)
+                for p in exs[name]]
+            for label, name in zip([TRAIN, VALID, TEST], ['train', 'val', 'test'])
+        }
+
+
+class Pose2DExampleBarecat:
+    def __init__(self, joint_info, bc_annotation_path, bc_image_path, path_in_file):
+        self.bc_annotation_path = bc_annotation_path
+        self.bc_image_path = bc_image_path
+        self.path = path_in_file
+        self.n_joints = joint_info.n_joints
+        self.image_path = '_'.join(self.path.partition('/')[2].split('_')[:-1])
+
+    def load(self, load_image=True) -> Pose2DExample:
+        if hasattr(self, 'image_path'):
+            del self.image_path
+
+        d = get_cached_reader(self.bc_annotation_path)[self.path]
+        ex = dict_to_example(d, self.n_joints)
+        if load_image:
+            try:
+                ex.image = get_cached_reader(self.bc_image_path)[ex.image_path]
+            except KeyError:
+                ex.image = improc.imread(ex.image_path)
+        return ex
 
 
 @spu.picklecache('many2d.pkl', min_time="2020-02-01T02:53:21")
@@ -69,6 +122,11 @@ def make_coco_reduced():
     return posepile.ds.coco.main.make_reduced_dataset()
 
 
+def make_coco_wholebody():
+    import posepile.ds.coco.main
+    return posepile.ds.coco.main.make_wholebody()
+
+
 def make_mpii_yolo():
     import posepile.ds.mpii.main
     return posepile.ds.mpii.main.make_mpii_yolo()
@@ -76,14 +134,59 @@ def make_mpii_yolo():
 
 @functools.lru_cache()
 def get_dataset(dataset_name, *args, **kwargs):
+    from simplepyutils import FLAGS
+
+    # Datasets can be loaded from pickle files
+    if dataset_name.endswith('.pkl'):
+        return spu.load_pickle(util.ensure_absolute_path(dataset_name))
+
+    # Datasets can be loaded from barecat files
+    if dataset_name.endswith('.barecat'):
+        return Pose2DDatasetBarecat(dataset_name, FLAGS.image_barecat_path)
+
     try:
         make_fn = globals()[f'make_{dataset_name}']
     except KeyError:
         try:
             dataset_module = importlib.import_module(f'posepile.ds.{dataset_name}.main')
-        except ImportError:
-            raise ValueError(f'Dataset {dataset_name} not found.')
+        except ImportError as e:
+            raise ValueError(f'Dataset {dataset_name} not found.') from e
 
         make_fn = dataset_module.make_dataset
 
     return make_fn(*args, **kwargs)
+
+
+def dict_to_example(d, n_joints):
+    if 'cam' in d:
+        cam = cameralib.Camera(
+            rot_world_to_cam=cv2.Rodrigues(d['cam']['rotvec_w2c'])[0],
+            optical_center=np.array(d['cam']['loc']),
+            intrinsic_matrix=np.concatenate([d['cam']['intr'], np.array([[0, 0, 1]])]),
+            distortion_coeffs=d['cam'].get('distcoef', None),
+            world_up=d['cam'].get('up', (0, 0, 1))
+        )
+    else:
+        cam = None
+
+    coords = np.full(shape=[n_joints, 2], dtype=np.float32, fill_value=np.nan)
+    j = d['joints2d']
+    if len(j['i_rows']) > 0:
+        coords[j['i_rows']] = j['rows']
+    else:
+        coords = j['rows']
+
+    if 'densepose' in d:
+        dp = d['densepose']
+        densepose = (dp['imcoords'], dp['i_faces'], dp['barycoords'])
+    else:
+        densepose = None
+
+    return Pose2DExample(
+        image_path=d['impath'],
+        bbox=d['bbox'].astype(np.float32),
+        camera=cam,
+        coords=coords,
+        mask=rlemasklib.decompress(d['mask']) if 'mask' in d else None,
+        densepose=densepose
+    )

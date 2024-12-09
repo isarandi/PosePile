@@ -10,16 +10,20 @@
 set -euo pipefail
 source posepile/functions.sh
 check_data_root
-
-mkdircd "$DATA_ROOT/3dpw"
+dataset_name=3dpw
+dataset_dir="$DATA_ROOT/$dataset_name"
+mkdircd "$dataset_dir"
 
 wget https://virtualhumans.mpi-inf.mpg.de/3DPW/imageFiles.zip
-unzip imageFiles.zip
-rm imageFiles.zip
+extractrm imageFiles.zip
 
 wget https://virtualhumans.mpi-inf.mpg.de/3DPW/sequenceFiles.zip
-unzip sequenceFiles.zip
-rm sequenceFiles.zip
+extractrm sequenceFiles.zip
 rm -rf __MACOSX
 
+
+python -m humcentr_cli.detect_people --image-root="$dataset_dir/imageFiles" --out-path="$dataset_dir/yolov4_detections.pkl"
+
 python -m posepile.ds.tdpw.main
+
+

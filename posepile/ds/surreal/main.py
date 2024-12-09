@@ -6,10 +6,11 @@ import cameralib
 import numpy as np
 import rlemasklib
 import scipy.optimize
+import scipy.spatial.distance
 import simplepyutils as spu
 import transforms3d
 from simplepyutils import FLAGS
-from smpl import SMPL
+from smpl.numpy import SMPL
 
 import posepile.datasets3d as ds3d
 from posepile import util
@@ -118,6 +119,8 @@ def process_matfile(matpath, store_vertices=False, adaptive_threshold=100):
 
     for i_frame in range(n_frames):
         image_path = f'{image_dir}/frame_{i_frame:06d}.jpg'
+        # should be trans = released_coords3d[i_frame][0] - computed_coords3d[i_frame][0]
+        # TODO fix. Left as is, for consistency with how training was performed for SarandiWACV23
         trans = released_coords3d[i_frame][0] - root_pos
         world_coords = (computed_coords3d[i_frame] + trans)[selected_points]
 
@@ -173,19 +176,18 @@ def get_smpl_joints(body_model, pose_params, shape_params, zrot, store_vertices=
     return points * 1000
 
 
-def save_mesh_joint_info():
-    body_model = load_smpl_model(gender='neutral')
-    verts = body_model(np.zeros((1, 72)), np.zeros((1, 10)))['vertices'][0]
+def make_mesh_joint_info(body_model):
+    verts = body_model(np.zeros((1, body_model.num_joints * 3)), np.zeros((1, 10)))['vertices'][0]
 
     verts_mirror = verts.copy()
     verts_mirror[:, 0] *= -1
 
-    dist = np.linalg.norm(verts_mirror[np.newaxis] - verts[:, np.newaxis], axis=-1)
+    dist = scipy.spatial.distance.cdist(verts_mirror, verts)
     vert_indices, mirror_indices = scipy.optimize.linear_sum_assignment(dist)
     i_centrals = np.argwhere(mirror_indices == vert_indices)[:, 0]
     i_lefts = np.argwhere((verts - verts[mirror_indices])[:, 0] > 0)[:, 0]
 
-    names = [None] * 6890
+    names = [None] * body_model.v_template.shape[0]  # body_model.num_vertices
     for i_within_centrals, i_joint in enumerate(i_centrals):
         names[i_joint] = f'c{i_within_centrals:04d}'
 
@@ -193,7 +195,12 @@ def save_mesh_joint_info():
         names[i_joint] = f'l{i_within_lefts:04d}'
         names[mirror_indices[i_joint]] = f'r{i_within_lefts:04d}'
 
-    joint_info = JointInfo(names, [])
+    return JointInfo(names, [])
+
+
+def save_mesh_joint_info():
+    body_model = load_smpl_model(gender='neutral')
+    joint_info = make_mesh_joint_info(body_model)
     spu.dump_pickle(joint_info, f'{DATA_ROOT}/skeleton_conversion/smpl_mesh_joint_info.pkl')
 
 

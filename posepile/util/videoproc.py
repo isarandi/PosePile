@@ -26,8 +26,16 @@ def transform(inp_path, out_path, process_frame_fn, **kwargs):
 
 
 def num_frames(path):
-    with imageio.get_reader(path) as vid:
-        return vid.get_meta_data()['nframes']
+    with imageio.get_reader(path, 'ffmpeg') as vid:
+        metadata = vid.get_meta_data()
+        n = metadata['nframes']
+        # check if its integer and not string etc
+        if isinstance(n, int):
+            return n
+        else:
+            return int(metadata['duration'] * metadata['fps'])
+
+
 
 
 def video_audio_mux(vidpath_audiosource, vidpath_imagesource, out_video_path):

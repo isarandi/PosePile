@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 urlencode_() {
   local length="${#1}"
   for ((i = 0; i < length; i++)); do
@@ -50,4 +51,25 @@ mkdircd() {
   cd "$1" || exit 1
 }
 
+extractrm() {
+  for file in "$@"; do
+    case "$file" in
+      *.zip)
+        7z x "$file" && rm "$file"
+        ;;
+      *.tar | *.tar.gz | *.tgz | *.tar.bz2 | *.tbz2 | *.tar.xz | *.txz)
+        tar -xvf "$file" && rm "$file"
+        ;;
+      *.rar)
+        unrar x "$file" && rm "$file"
+        ;;
+      *)
+        echo "Unsupported file type: $file"
+        ;;
+    esac
+  done
+}
+
+
 CODE_DIR=$(python -c "import posepile; print(posepile.__path__[0])")
+

@@ -12,7 +12,7 @@ from posepile.joint_info import JointInfo
 from posepile.paths import DATA_ROOT
 from posepile.util.preproc_for_efficiency import make_efficient_example
 from simplepyutils import logger
-from smpl.smpl import SMPL
+from smpl.numpy import SMPL
 
 
 @spu.picklecache('spec2.pkl', min_time="2022-08-05T16:57:34")
@@ -30,12 +30,15 @@ def make_dataset():
     joint_info = JointInfo(joint_names, edges)
     body_model = SMPL(model_root=f'{DATA_ROOT}/body_models/smpl')
 
+
     openpose_joint_names = (
         'head,neck,rsho,relb,rwri,lsho,lelb,lwri,pelv,rhip,rkne,rank,lhip,lkne,lank,reye,leye,'
         'rear,lear,lto2,lto3,lhee,rto2,rto3,rhee').split(',')
     commons = 'neck,rsho,relb,rwri,lsho,lelb,lwri,pelv,rhip,rkne,rank,lhip,lkne,lank'.split(',')
+    S_names = 'rank,rkne,rhip,lhip,lkne,lank,rwri,relb,rsho,lsho,lelb,lwri'.split(',')
     i_3d = [joint_info.ids[n] for n in commons]
     i_2d = [openpose_joint_names.index(n) for n in commons]
+    S_selector = [joint_info.ids[n] for n in S_names]
 
     def load_examples(a):
         examples = []
@@ -52,13 +55,17 @@ def make_dataset():
                     np.array([a['shape'][i_pers] for i_pers in ids]))
 
                 for i_pers, pose_unk in zip(ids, pose_unks):
-                    openpose_gt, cam_rotmat, cam_int = (
-                        a['openpose_gt'][i_pers], a['cam_rotmat'][i_pers], a['cam_int'][i_pers])
+                    openpose_gt = a['openpose_gt'][i_pers]
+                    cam_rotmat = a['cam_rotmat'][i_pers]
+                    cam_int = a['cam_int'][i_pers]
+                    S = a['S'][i_pers, :, :3] * 1000
+
                     pose2d = openpose_gt[..., :2]
                     cam = cameralib.Camera(
                         rot_world_to_cam=cam_rotmat, intrinsic_matrix=cam_int, world_up=(0, -1, 0))
                     rot, trans = calibrate_extrinsics(pose2d[i_2d], pose_unk[i_3d], cam_int)
-                    camcoords = pose_unk @ rot.T + trans
+                    scale_factor = get_scale(S) / get_scale(pose_unk[S_selector])
+                    camcoords = (pose_unk @ rot.T + trans) * scale_factor
                     world_coords = cam.camera_to_world(camcoords)
                     imcoords = cam.world_to_image(world_coords)
                     posebox = boxlib.expand(boxlib.bb_of_points(imcoords), 1.15)
@@ -107,6 +114,11 @@ def make_dataset():
 
 def get_smpl_joints(body_model, pose_params, shape_params):
     return body_model(pose_params, shape_params, return_vertices=False)['joints'] * 1000
+
+def get_scale(poses):
+    mean = np.mean(poses, axis=-2, keepdims=True)
+    return np.sqrt(np.mean(np.square(poses - mean), axis=(-2, -1), keepdims=False))
+
 
 
 def calibrate_extrinsics(image_coords2d, world_coords3d, intrinsic_matrix):

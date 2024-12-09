@@ -1,4 +1,7 @@
 import functools
+import os
+import os.path as osp
+from fractions import Fraction
 
 import PIL.Image
 import cv2
@@ -10,37 +13,77 @@ from simplepyutils import logger
 
 from posepile import util
 
+VALID_SCALES = [
+    Fraction(2, 1), Fraction(15, 8), Fraction(7, 4), Fraction(13, 8),
+    Fraction(3, 2), Fraction(11, 8), Fraction(5, 4), Fraction(9, 8),
+    Fraction(1, 1), Fraction(7, 8), Fraction(3, 4), Fraction(5, 8),
+    Fraction(1, 2), Fraction(3, 8), Fraction(1, 4), Fraction(1, 8)]
+
 use_libjpeg_turbo = True
 if use_libjpeg_turbo:
     import jpeg4py
 
 
-    def _imread(path, dst=None):
+    def _imread(path, *, dst=None, scale=1):
         lower = path.lower()
         if not (lower.endswith('.jpg') or lower.endswith('.jpeg')):
+            if downscale_factor != 1:
+                raise ValueError('downscale_factor only supported for JPEG images')
             return cv2.imread(path)[..., ::-1]
         try:
-            return jpeg4py.JPEG(path).decode(dst)
+            return decode_jpeg(path, dst=dst, scale=scale)
         except jpeg4py.JPEGRuntimeError:
             logger.error(f'Could not load image at {path}, JPEG error.')
             raise
 else:
-    def _imread(path, dst=None):
+    def _imread(path, dst=None, downscale_factor=1):
         assert dst is None
+        if downscale_factor != 1:
+            raise NotImplementedError('downscale_factor only implemented for libjpeg-turbo')
         return imageio.imread(path)
 
 
-def imread(path, dst=None):
+def imread(path, *, dst=None, scale=1):
     if isinstance(path, bytes):
         path = path.decode('utf8')
-    elif isinstance(path, np.str):
-        path = str(path)
-
     path = util.ensure_absolute_path(path)
-    return _imread(path, dst)[..., :3]
+    return _imread(path, dst=dst, scale=scale)[..., :3]
 
-def decode_jpeg(jpeg_bytes):
-    return jpeg4py.JPEG(np.frombuffer(jpeg_bytes, np.uint8)).decode()
+
+def decode_jpeg(data, *, dst=None, scale=None):
+    j = make_jpeg(data)
+    if dst is None:
+        if j.width is None:
+            j.parse_header()
+        w, h = get_scaled_size(j.width, j.height, scale)
+        dst = np.empty([h, w, 3], np.uint8)
+    return j.decode(dst)
+
+
+def make_jpeg(data):
+    if isinstance(data, (str, np.ndarray)):
+        return jpeg4py.JPEG(data)
+    elif isinstance(data, jpeg4py.JPEG):
+        return data
+    elif isinstance(data, bytes):
+        return jpeg4py.JPEG(np.frombuffer(jpeg_bytes, np.uint8))
+    else:
+        raise TypeError(f'Unsupported data type {type(data)} for JPEG')
+
+
+def get_scaled_size(width, height, scale=1):
+    scale = Fraction.from_float(scale)
+    if scale not in VALID_SCALES:
+        raise ValueError("scale should be one of", list(map(str, VALID_SCALES)))
+    return (
+        (width * scale.numerator + scale.denominator - 1) // scale.denominator,
+        (height * scale.numerator + scale.denominator - 1) // scale.denominator)
+
+
+def decode_imsize_jpeg(data):
+    j = make_jpeg(data)
+    j.parse_header()
+    return j.width, j.height
 
 
 def resize_by_factor(im, factor, interp=None):
@@ -158,6 +201,17 @@ def is_image_readable(path):
         return True
     except Exception:
         return False
+
+
+def imwrite_jpeg(image, path, quality=95):
+    spu.ensure_parent_dir_exists(path)
+    try:
+        cv2.imwrite(path, image[..., ::-1], [cv2.IMWRITE_JPEG_QUALITY, quality])
+    except BaseException as e:
+        # clean up the file if it was created, as it will otherwise be corrupted
+        if osp.isfile(path):
+            os.remove(path)
+        raise
 
 
 def is_jpeg_readable(path):

@@ -19,7 +19,6 @@ check_data_root
 
 mkdircd "$DATA_ROOT/bdd100k"
 
-unzip bdd100k_pose_labels_trainval.zip
-rm bdd100k_pose_labels_trainval.zip
+extractrm bdd100k_pose_labels_trainval.zip
 mv bdd100k_pose_labels_trainval/bdd100k/labels ./
 rmdir -p bdd100k_pose_labels_trainval/bdd100k

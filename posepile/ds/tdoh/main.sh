@@ -12,12 +12,11 @@ check_data_root
 
 mkdircd "$DATA_ROOT/3doh"
 
-# Download trainset.zip and testset.zip3
+# Download trainset.zip and testset.zip
 # Link: https://seueducn1-my.sharepoint.com/personal/yangangwang_seu_edu_cn/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fyangangwang%5Fseu%5Fedu%5Fcn%2FDocuments%2F3DOH50K
 
-unzip trainset.zip
-unzip testset.zip
-rm trainset.zip testset.zip
+extractrm trainset.zip
+extractrm testset.zip
 
 python -m humcentr_cli.detect_people --image-root="$DATA_ROOT/3doh" --out-path="$DATA_ROOT/3doh/yolov4_detections.pkl"
 python -m posepile.ds.tdoh.main

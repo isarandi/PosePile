@@ -8,6 +8,7 @@ import rlemasklib
 import scipy.optimize
 import simplepyutils as spu
 import transforms3d
+import pandas as pd
 
 import posepile.datasets3d as ds3d
 from posepile.joint_info import JointInfo
@@ -24,8 +25,8 @@ def make_dataset():
 
     def load_examples(section):
         examples = []
-        df = spu.load_pickle(f'{root}/SMPL/{section}_withjv.pkl')
-        df_smplx = spu.load_pickle(f'{root}/SMPLX/{section}_withjv.pkl')
+        df = pd.read_pickle(f'{root}/SMPL/{section}_withjv.pkl')
+        df_smplx = pd.read_pickle(f'{root}/SMPLX/{section}_withjv.pkl')
         with spu.ThrottledPool() as pool:
             for i_row in spu.progressbar(range(len(df))):
                 anno = df.iloc[i_row]

@@ -24,10 +24,8 @@ check_data_root
 # Logging in
 echo 'To download the Human3.6M dataset, you first need to register on the official website at http://vision.imar.ro/human3.6m'
 echo "If that's done, enter your details below:"
-printf 'Email registered on the Human3.6M website: '
-read -r email
-printf 'Password: '
-read -rs password
+read -rp 'Email: ' email
+read -rsp 'Password: ' password
 encoded_email=$(urlencode "$email")
 
 login_url="https://vision.imar.ro/human3.6m/checklogin.php"
@@ -72,8 +70,7 @@ for i in 1 5 6 7 8 9 11; do
   rm "Poses_D3_Positions_S$i.tgz"
 done
 
-unzip code-v1.2.zip
-rm code-v1.2.zip
+extractrm code-v1.2.zip
 
 python -m posepile.ds.h36m.extract_frames_and_boxes
 python -m posepile.ds.h36m.main
